@@ -1277,34 +1277,18 @@ li {
 }
 
 .nm-provider-grid {
-  display: grid;
+  display: none;
   gap: 1.25rem 1rem;
   grid-template-columns: repeat(2, 1fr);
   max-width: 920px;
   margin-inline: auto;
+  list-style: none;
+  padding: 0;
 }
 
-@media (max-width: 767px) {
+@media (min-width: 768px) {
   .nm-provider-grid {
-    display: flex;
-    gap: 0.9rem;
-    max-width: none;
-    margin-inline: -1rem;
-    padding-inline: 1rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 1rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .nm-provider-grid::-webkit-scrollbar {
-    display: none;
-  }
-
-  .nm-provider-grid > li {
-    flex: 0 0 min(72vw, 15.5rem);
-    scroll-snap-align: start;
+    display: grid;
   }
 }
 
@@ -1313,6 +1297,89 @@ li {
     grid-template-columns: repeat(4, 1fr);
     gap: 1.35rem 1.1rem;
   }
+}
+
+/* Mobile buttoned carousels — phones only (< 768) */
+.nm-provider-carousel,
+.nm-nurse-carousel {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .nm-provider-carousel {
+    display: block;
+    max-width: 18.5rem;
+    margin-inline: auto;
+  }
+
+  .nm-nurse-carousel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+}
+
+.nm-nurse-tile-solo {
+  max-width: 11rem;
+  width: 11rem;
+}
+
+.nm-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-top: 1.15rem;
+}
+
+.nm-carousel-btn {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(18, 75, 56, 0.2);
+  background: #fff;
+  color: var(--color-forest);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.nm-carousel-btn:hover {
+  background: var(--color-forest);
+  border-color: var(--color-forest);
+  color: #fff;
+}
+
+.nm-carousel-btn:active {
+  transform: scale(0.96);
+}
+
+.nm-carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.nm-carousel-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  background: rgba(18, 75, 56, 0.22);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    width 0.2s ease;
+}
+
+.nm-carousel-dot.is-active {
+  width: 1.15rem;
+  background: var(--color-forest);
 }
 
 .nm-provider-tile {
@@ -1389,46 +1456,19 @@ li {
 }
 
 .nm-nurse-grid {
-  display: grid;
+  display: none;
   gap: 1.35rem 1rem;
   grid-template-columns: repeat(2, 1fr);
   justify-items: center;
   max-width: 1100px;
   margin-inline: auto;
-}
-
-@media (max-width: 767px) {
-  .nm-nurse-grid {
-    display: flex;
-    gap: 1rem;
-    justify-items: unset;
-    max-width: none;
-    margin-inline: -1rem;
-    padding-inline: 1rem 1.25rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 1rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .nm-nurse-grid::-webkit-scrollbar {
-    display: none;
-  }
-
-  .nm-nurse-grid > li {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-  }
-
-  .nm-nurse-tile {
-    max-width: 9.5rem;
-    width: 9.5rem;
-  }
+  list-style: none;
+  padding: 0;
 }
 
 @media (min-width: 768px) {
   .nm-nurse-grid {
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
   }
 
