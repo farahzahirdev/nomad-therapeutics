@@ -23,7 +23,7 @@ export const PHONE_NUMBER = "(425) 675-8754";
 export const PHONE_HREF = "tel:+14256758754";
 
 export const ADDRESS = "200 First Ave W, Suite 403, Seattle, WA 98119";
-export const HOURS = "Monday–Friday, 9 AM – 5 PM";
+export const HOURS = "Monday-Friday, 9 AM - 5 PM";
 export const EMAIL = "info@nomadtherapeutics.org";
 export const EMAIL_HREF = "mailto:info@nomadtherapeutics.org";
 export const MAPS_URL =
@@ -62,7 +62,7 @@ export const CONDITIONS = [
   },
   {
     title: "Suicidal thoughts",
-    description: "Evaluated carefully with a clinician — and with crisis support always available.",
+    description: "Evaluated carefully with a clinician, and with crisis support always available.",
   },
 ] as const;
 
@@ -104,13 +104,13 @@ export const HOW_IT_WORKS = [
     step: "01",
     title: "Free consultation call",
     description:
-      "A short conversation about what you’ve tried and what you want to feel different. No commitment — just clarity.",
+      "A short conversation about what you’ve tried and what you want to feel different. No commitment, just clarity.",
   },
   {
     step: "02",
     title: "Clinical evaluation",
     description:
-      "A clinician reviews your history, medications, and safety. We’ll recommend a plan — or tell you honestly if we’re not the right fit.",
+      "A clinician reviews your history, medications, and safety. We’ll recommend a plan or tell you honestly if we’re not the right fit.",
   },
   {
     step: "03",
@@ -124,7 +124,7 @@ export const WHY_NOMAD = [
   {
     title: "A nurse stays the entire session",
     description:
-      "Vitals monitored throughout, with physician oversight on every plan — clinic-grade safety in your home.",
+      "Vitals monitored throughout, with physician oversight on every plan, clinic-grade safety in your home.",
   },
   {
     title: "Your therapist stays in the loop",

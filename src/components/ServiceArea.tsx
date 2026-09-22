@@ -20,7 +20,7 @@ export default function ServiceArea() {
         <div className="service-area-panel">
           <p className="service-area-eyebrow">Greater Seattle</p>
           <h2 className="service-area-title mt-3 text-3xl sm:text-4xl lg:text-[2.65rem]">
-            Local care across the region — at home or in Queen Anne
+            Local care across the region, at home or in Queen Anne
           </h2>
           <p className="service-area-lede mt-4 text-lg leading-relaxed">{SERVICE_AREA}</p>
 

@@ -13,8 +13,8 @@ export default function WhyNomad() {
               Clinic-grade care that fits into a real life
             </h2>
             <p className="text-lead mt-5">
-              We bring nurse-administered IM ketamine to your home — six sessions over three weeks
-              — so getting better doesn&apos;t mean rearranging your life around clinic visits.
+              We bring nurse-administered IM ketamine to your home, six sessions over three weeks,
+              so getting better doesn&apos;t mean rearranging your life around clinic visits.
             </p>
 
             <div className="nm-media mt-8 hidden lg:block">

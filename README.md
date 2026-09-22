@@ -1,6 +1,6 @@
 # Nomad Therapeutics Landing Page
 
-Marketing landing page for Nomad Therapeutics — Seattle’s interventional psychiatry practice, focused on at-home IM ketamine for treatment-resistant depression, PTSD, and anxiety.
+Marketing landing page for Nomad Therapeutics, Seattle’s interventional psychiatry practice, focused on at-home IM ketamine for treatment-resistant depression, PTSD, and anxiety.
 
 ## Getting Started
 

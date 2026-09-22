@@ -9,7 +9,7 @@ export default function Providers() {
           <p className="section-label section-label-center">Providers</p>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-[2.65rem]">The people behind Nomad</h2>
           <p className="text-lead mt-4">
-            Clinicians and founders who built care that comes to you — and the nurses who make every
+            Clinicians and founders who built care that comes to you, and the nurses who make every
             home visit feel safe.
           </p>
         </div>
@@ -50,7 +50,7 @@ export default function Providers() {
               Registered nurses who come to you
             </h3>
             <p className="text-lead mt-3">
-              Every IM ketamine session is nurse-administered — they stay for the full visit.
+              Every IM ketamine session is nurse-administered, they stay for the full visit.
             </p>
           </div>
 

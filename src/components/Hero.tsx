@@ -43,7 +43,7 @@ export default function Hero() {
 
           <p className="nm-hero-lede">
             Safe, nurse-administered IM ketamine for treatment-resistant depression, PTSD and
-            anxiety — in the comfort of your home.
+            anxiety, in the comfort of your home.
           </p>
 
           <ul className="nm-hero-features" aria-label="Care highlights">

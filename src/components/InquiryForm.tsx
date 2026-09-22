@@ -59,7 +59,7 @@ export default function InquiryForm() {
               <p className="section-label">Get started</p>
               <h2 className="mt-3 text-3xl sm:text-4xl">Find out if you qualify</h2>
               <p className="text-lead mx-auto mt-4 max-w-xl lg:mx-0">
-                Complete the form and our Seattle team will reach out. No obligation — just a clear
+                Complete the form and our Seattle team will reach out. No obligation, just a clear
                 next step toward care that can finally help.
               </p>
               <p className="mt-3 text-sm font-medium text-mint-deep">

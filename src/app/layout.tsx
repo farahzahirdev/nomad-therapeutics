@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "At-Home IM Ketamine in Seattle | Nomad Therapeutics",
     description:
-      "A registered nurse comes to you. Physician-supervised IM ketamine for depression, PTSD, and anxiety — most patients start within a week.",
+      "A registered nurse comes to you. Physician-supervised IM ketamine for depression, PTSD, and anxiety. Most patients start within a week.",
     url: "https://www.nomadtherapeutics.org",
     locale: "en_US",
     type: "website",

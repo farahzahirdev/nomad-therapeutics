@@ -10,7 +10,7 @@ export default function FinalCTA() {
           <div className="order-2 overflow-hidden rounded-[1.25rem] border border-line shadow-[0_18px_50px_rgba(18,75,56,0.1)] lg:order-1">
             <Image
               src={IMAGES.finalCta}
-              alt="Nomad Therapeutics — care that starts with a conversation"
+              alt="Nomad Therapeutics: care that starts with a conversation"
               width={1024}
               height={537}
               quality={90}
@@ -26,7 +26,7 @@ export default function FinalCTA() {
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-muted">
               Book a free consultation or find out if you qualify. A local Seattle team you can
-              call or text — no pressure, just a clear next step.
+              call or text, no pressure, just a clear next step.
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
               <a

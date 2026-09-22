@@ -10,7 +10,7 @@ export default function Testimonials() {
             What people say after treatment
           </h2>
           <p className="text-lead mt-4">
-            Safety, compassion, and results that feel personal — in the comfort of home.
+            Safety, compassion, and results that feel personal, in the comfort of home.
           </p>
         </div>
 

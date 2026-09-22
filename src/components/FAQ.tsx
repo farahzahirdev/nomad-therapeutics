@@ -18,13 +18,13 @@ export default function FAQ() {
               Answers before you call
             </h2>
             <p className="text-lead mt-4">
-              The questions almost everyone asks first — answered honestly.
+              The questions almost everyone asks first, answered honestly.
             </p>
 
             <div className="mt-8 hidden overflow-hidden rounded-[1.25rem] border border-line shadow-[0_18px_50px_rgba(18,75,56,0.1)] lg:block">
               <Image
                 src={IMAGES.faq}
-                alt="Nomad Therapeutics — care that comes to you"
+                alt="Nomad Therapeutics: care that comes to you"
                 width={640}
                 height={267}
                 quality={90}

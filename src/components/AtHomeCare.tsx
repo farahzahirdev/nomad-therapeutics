@@ -13,7 +13,7 @@ export default function AtHomeCare() {
           </h2>
           <p className="text-lead mt-4">
             No waiting rooms. No unfamiliar clinic setting. A registered nurse brings supervised
-            care to your home — so the treatment can fit the life you already have.
+            care to your home, so the treatment can fit the life you already have.
           </p>
         </div>
 

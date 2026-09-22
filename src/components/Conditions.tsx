@@ -26,7 +26,7 @@ export default function Conditions() {
               </h2>
               <p className="text-lead mt-4">
                 At-home IM ketamine for adults navigating depression, PTSD, anxiety, and related
-                challenges — after clinician evaluation.
+                challenges, after clinician evaluation.
               </p>
             </div>
 

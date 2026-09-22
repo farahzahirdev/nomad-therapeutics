@@ -11,7 +11,7 @@ export default function HowItWorks() {
             <div className="nm-section-copy">
               <p className="section-label">How it works</p>
               <h2 className="mt-3 text-3xl sm:text-4xl lg:text-[2.65rem]">
-                From first call to first session — in days, not months
+                From first call to first session, in days, not months
               </h2>
               <p className="text-lead mt-4">
                 Three clear steps. No referral required. Most patients begin at-home care within a

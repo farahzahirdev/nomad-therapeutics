@@ -31,7 +31,7 @@ export default function Footer() {
               />
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
-              Seattle&apos;s full-service interventional psychiatry practice — at home or in our
+              Seattle&apos;s full-service interventional psychiatry practice, at home or in our
               Queen Anne clinic.
             </p>
             <p className="mt-3 text-sm text-white/60">{SERVICE_AREA}</p>
