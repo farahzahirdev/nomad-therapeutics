@@ -79,16 +79,6 @@ export default function Header() {
           </nav>
 
           <div className="nm-header-meta">
-            <div className="nm-header-location">
-              <PinIcon />
-              <span>
-                <span className="block">Serving King, Pierce, Kitsap &amp; Thurston Counties</span>
-                <span className="block opacity-80">
-                  Queen Anne Clinic (Seattle) + At-Home Visits
-                </span>
-              </span>
-            </div>
-            <span className="nm-header-divider" aria-hidden />
             <a href={PHONE_HREF} className="nm-header-phone">
               <PhoneIcon />
               {PHONE_NUMBER}
@@ -115,7 +105,6 @@ export default function Header() {
               </a>
             ))}
             <div className="nm-mobile-meta">
-              <p>King, Pierce, Kitsap &amp; Thurston · Queen Anne + at-home</p>
               <a href={PHONE_HREF} onClick={close}>
                 Call {PHONE_NUMBER}
               </a>
@@ -136,14 +125,6 @@ export default function Header() {
         />
       )}
     </>
-  );
-}
-
-function PinIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 shrink-0 text-forest" aria-hidden="true">
-      <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.08 19.08 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.08 19.08 0 002.683 2.282 16.975 16.975 0 001.144.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-    </svg>
   );
 }
 
