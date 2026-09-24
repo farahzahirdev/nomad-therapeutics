@@ -1,7 +1,6 @@
 "use client";
 
-import Script from "next/script";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   ADDRESS,
   FORM_ID,
@@ -13,41 +12,46 @@ import {
   PHONE_NUMBER,
   SERVICE_AREA,
 } from "@/lib/constants";
+import {
+  createGhlFormIframe,
+  initGhlIframe,
+  unmountGhlEmbed,
+  waitForGhlEmbed,
+} from "@/lib/ghlEmbed";
 
-function parseEmbedHeight(data: unknown): number | null {
-  if (typeof data === "number" && data > 0) return data;
-
-  if (typeof data === "string") {
-    const match = data.match(/height[:=]\s*(\d+)/i);
-    if (match) return Number(match[1]);
-  }
-
-  if (typeof data === "object" && data !== null) {
-    const payload = data as Record<string, unknown>;
-    if (typeof payload.height === "number" && payload.height > 0) return payload.height;
-    if (typeof payload.frameHeight === "number" && payload.frameHeight > 0) {
-      return payload.frameHeight;
-    }
-  }
-
-  return null;
-}
+const FORM_MIN_HEIGHT = "900px";
 
 export default function InquiryForm() {
+  const hostRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const resizeIframe = (height: number) => {
-      const iframe = document.getElementById(FORM_IFRAME_ID) as HTMLIFrameElement | null;
-      if (iframe) iframe.style.height = `${height}px`;
-    };
+    const host = hostRef.current;
+    if (!host) return;
 
-    const handleMessage = (event: MessageEvent) => {
-      if (!event.origin.includes("4tms.com")) return;
-      const height = parseEmbedHeight(event.data);
-      if (height) resizeIframe(height);
-    };
+    const iframe = createGhlFormIframe({
+      id: FORM_ID,
+      name: "TMS: New Web Inquiry + Params",
+      height: "2142",
+      iframeId: FORM_IFRAME_ID,
+      minHeight: FORM_MIN_HEIGHT,
+      borderRadius: "16px",
+    });
 
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    // Keep cookie consent attrs from the original embed markup
+    iframe.setAttribute("data-cookie-consent", "true");
+    iframe.setAttribute("data-cookie-consent-provider", "auto");
+
+    host.replaceChildren(iframe);
+
+    const handleLoad = () => waitForGhlEmbed(iframe);
+    iframe.addEventListener("load", handleLoad);
+    waitForGhlEmbed(iframe);
+    initGhlIframe(iframe);
+
+    return () => {
+      iframe.removeEventListener("load", handleLoad);
+      unmountGhlEmbed(host);
+    };
   }, []);
 
   return (
@@ -128,36 +132,15 @@ export default function InquiryForm() {
           </div>
 
           <div className="embed-panel min-w-0">
-            <iframe
-              src={`https://go.4tms.com/widget/form/${FORM_ID}`}
-              style={{
-                width: "100%",
-                height: "2142px",
-                border: "none",
-                display: "block",
-                background: "transparent",
-                borderRadius: "20px",
-              }}
-              id={FORM_IFRAME_ID}
-              data-layout="{'id':'INLINE'}"
-              data-trigger-type="alwaysShow"
-              data-trigger-value=""
-              data-activation-type="alwaysActivated"
-              data-activation-value=""
-              data-deactivation-type="neverDeactivate"
-              data-deactivation-value=""
-              data-form-name="TMS: New Web Inquiry + Params"
-              data-height="2142"
-              data-layout-iframe-id={FORM_IFRAME_ID}
-              data-form-id={FORM_ID}
-              data-cookie-consent="true"
-              data-cookie-consent-provider="auto"
-              title="TMS: New Web Inquiry + Params"
+            <div
+              ref={hostRef}
+              className="w-full"
+              style={{ minHeight: FORM_MIN_HEIGHT }}
+              aria-label="Qualification form"
             />
           </div>
         </div>
       </div>
-      <Script src="https://go.4tms.com/js/form_embed.js" strategy="afterInteractive" />
     </section>
   );
 }

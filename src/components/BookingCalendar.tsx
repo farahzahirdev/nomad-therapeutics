@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import { useEffect } from "react";
 import { CallButton, QualifyButton } from "@/components/CTAButtons";
 import {
@@ -10,6 +9,7 @@ import {
   PHONE_HREF,
   PHONE_NUMBER,
 } from "@/lib/constants";
+import { waitForGhlEmbed } from "@/lib/ghlEmbed";
 
 function parseEmbedHeight(data: unknown): number | null {
   if (typeof data === "number" && data > 0) return data;
@@ -32,9 +32,15 @@ function parseEmbedHeight(data: unknown): number | null {
 
 export default function BookingCalendar() {
   useEffect(() => {
+    const iframe = document.getElementById(CALENDAR_IFRAME_ID) as HTMLIFrameElement | null;
+    if (!iframe) return;
+
+    const handleLoad = () => waitForGhlEmbed(iframe);
+    iframe.addEventListener("load", handleLoad);
+    waitForGhlEmbed(iframe);
+
     const resizeIframe = (height: number) => {
-      const iframe = document.getElementById(CALENDAR_IFRAME_ID) as HTMLIFrameElement | null;
-      if (iframe) iframe.style.height = `${height}px`;
+      iframe.style.height = `${height}px`;
     };
 
     const handleMessage = (event: MessageEvent) => {
@@ -44,7 +50,10 @@ export default function BookingCalendar() {
     };
 
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    return () => {
+      iframe.removeEventListener("load", handleLoad);
+      window.removeEventListener("message", handleMessage);
+    };
   }, []);
 
   return (
@@ -83,6 +92,7 @@ export default function BookingCalendar() {
               style={{
                 width: "100%",
                 height: "720px",
+                minHeight: "720px",
                 border: "none",
                 overflow: "hidden",
                 display: "block",
@@ -95,7 +105,6 @@ export default function BookingCalendar() {
           </div>
         </div>
       </div>
-      <Script src="https://go.4tms.com/js/form_embed.js" strategy="afterInteractive" />
     </section>
   );
 }

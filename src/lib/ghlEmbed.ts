@@ -1,0 +1,176 @@
+const GHL_IFRAME_RESIZER_ATTR = "data-iframe-resizer-initialized";
+
+type IFrameResizeFn = (
+  options: Record<string, unknown>,
+  target?: HTMLIFrameElement,
+) => void;
+
+export type GhlFormConfig = {
+  id: string;
+  name: string;
+  height: string;
+  iframeId: string;
+  minHeight: string;
+  borderRadius?: string;
+};
+
+export type GhlCalendarConfig = {
+  id: string;
+  title: string;
+  iframeId: string;
+  minHeight: string;
+};
+
+function applyIframeStyles(
+  iframe: HTMLIFrameElement,
+  minHeight: string,
+  borderRadius = "20px",
+) {
+  Object.assign(iframe.style, {
+    width: "100%",
+    border: "none",
+    borderRadius,
+    minHeight,
+    height: minHeight,
+    display: "block",
+  });
+}
+
+export function createGhlFormIframe(config: GhlFormConfig): HTMLIFrameElement {
+  const iframe = document.createElement("iframe");
+  iframe.src = `https://go.4tms.com/widget/form/${config.id}`;
+  iframe.id = config.iframeId;
+  iframe.title = config.name;
+  iframe.setAttribute("data-layout", '{"id":"INLINE"}');
+  iframe.setAttribute("data-trigger-type", "alwaysShow");
+  iframe.setAttribute("data-trigger-value", "");
+  iframe.setAttribute("data-activation-type", "alwaysActivated");
+  iframe.setAttribute("data-activation-value", "");
+  iframe.setAttribute("data-deactivation-type", "neverDeactivate");
+  iframe.setAttribute("data-deactivation-value", "");
+  iframe.setAttribute("data-form-name", config.name);
+  iframe.setAttribute("data-height", config.height);
+  iframe.setAttribute("data-layout-iframe-id", config.iframeId);
+  iframe.setAttribute("data-form-id", config.id);
+  applyIframeStyles(iframe, config.minHeight, config.borderRadius ?? "20px");
+  return iframe;
+}
+
+export function createGhlCalendarIframe(config: GhlCalendarConfig): HTMLIFrameElement {
+  const iframe = document.createElement("iframe");
+  iframe.src = `https://go.4tms.com/widget/booking/${config.id}`;
+  iframe.id = config.iframeId;
+  iframe.title = config.title;
+  iframe.allow = "payment";
+  iframe.scrolling = "no";
+  applyIframeStyles(iframe, config.minHeight, "0");
+  Object.assign(iframe.style, { overflow: "hidden", height: config.minHeight });
+  return iframe;
+}
+
+/** Re-run GHL form_embed.js setup for a dynamically inserted iframe. */
+export function initGhlIframe(iframe: HTMLIFrameElement): void {
+  const contentWindow = iframe.contentWindow;
+  if (!contentWindow) return;
+
+  window.dispatchEvent(
+    new MessageEvent("message", {
+      data: ["iframeLoaded"],
+      source: contentWindow,
+    }),
+  );
+
+  const iFrameResize = (window as Window & { iFrameResize?: IFrameResizeFn }).iFrameResize;
+  if (typeof iFrameResize !== "function") return;
+  if (iframe.getAttribute(GHL_IFRAME_RESIZER_ATTR) === "true") return;
+
+  iframe.setAttribute(GHL_IFRAME_RESIZER_ATTR, "false");
+  iFrameResize(
+    {
+      log: false,
+      checkOrigin: false,
+      enablePublicMethods: true,
+      scrolling: true,
+      heightCalculationMethod: "offset",
+      autoResize: true,
+      sizeWidth: false,
+      sizeHeight: true,
+      resizedCallback: (data: { iframe?: HTMLIFrameElement; height?: number }) => {
+        const el = data?.iframe;
+        const height = data?.height;
+        if (el && typeof height === "number" && height >= 0) {
+          const nextHeight = `${height + 5}px`;
+          el.style.height = nextHeight;
+          el.style.minHeight = "0";
+          el.style.opacity = "1";
+          el.style.visibility = "visible";
+          el.style.pointerEvents = "auto";
+          el.style.display = "block";
+
+          const host = el.parentElement;
+          if (host) {
+            host.style.minHeight = "0";
+            host.style.height = "auto";
+          }
+        }
+      },
+    },
+    iframe,
+  );
+}
+
+export function waitForGhlEmbed(iframe: HTMLIFrameElement, attempt = 0): void {
+  const hasScript =
+    typeof (window as Window & { iFrameResize?: IFrameResizeFn }).iFrameResize === "function";
+
+  if (hasScript || attempt >= 30) {
+    initGhlIframe(iframe);
+    return;
+  }
+
+  window.setTimeout(() => waitForGhlEmbed(iframe, attempt + 1), 100);
+}
+
+export function mountGhlForm(host: HTMLElement, config: GhlFormConfig): HTMLIFrameElement {
+  host.replaceChildren();
+  const iframe = createGhlFormIframe(config);
+  host.appendChild(iframe);
+  return iframe;
+}
+
+export function mountGhlCalendar(host: HTMLElement, config: GhlCalendarConfig): HTMLIFrameElement {
+  host.replaceChildren();
+  const iframe = createGhlCalendarIframe(config);
+  host.appendChild(iframe);
+  return iframe;
+}
+
+export function unmountGhlEmbed(host: HTMLElement | null): void {
+  host?.replaceChildren();
+}
+
+function bindGhlIframe(iframe: HTMLIFrameElement): () => void {
+  const handleLoad = () => {
+    waitForGhlEmbed(iframe);
+  };
+
+  iframe.addEventListener("load", handleLoad);
+  waitForGhlEmbed(iframe);
+
+  return () => {
+    iframe.removeEventListener("load", handleLoad);
+  };
+}
+
+export function mountAndBindGhlForm(host: HTMLElement, config: GhlFormConfig): () => void {
+  const iframe = mountGhlForm(host, config);
+  return bindGhlIframe(iframe);
+}
+
+export function mountAndBindGhlCalendar(
+  host: HTMLElement,
+  config: GhlCalendarConfig,
+): () => void {
+  const iframe = mountGhlCalendar(host, config);
+  return bindGhlIframe(iframe);
+}
