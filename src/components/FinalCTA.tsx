@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { QualifyButton, CallButton } from "@/components/CTAButtons";
-import { BOOKING_SECTION_ID, FORM_SECTION_ID, IMAGES, PHONE_NUMBER } from "@/lib/constants";
+import { BookButton, QualifyButton, CallButton } from "@/components/CTAButtons";
+import { IMAGES, PHONE_NUMBER } from "@/lib/constants";
 
 export default function FinalCTA() {
   return (
-    <section id={BOOKING_SECTION_ID} className="section-padding scroll-mt-28 bg-mist-2/50">
+    <section className="section-padding scroll-mt-28 bg-mist-2/50">
       <div className="container-main">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
           <div className="order-2 overflow-hidden rounded-[1.25rem] border border-line shadow-[0_18px_50px_rgba(18,75,56,0.1)] lg:order-1">
@@ -29,12 +29,7 @@ export default function FinalCTA() {
               call or text, no pressure, just a clear next step.
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
-              <a
-                href={`#${FORM_SECTION_ID}`}
-                className="inline-flex items-center justify-center rounded-full bg-forest px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-forest/20 transition-all hover:bg-moss sm:px-8 sm:text-base"
-              >
-                Book your Free Consultation
-              </a>
+              <BookButton variant="primary" />
               <QualifyButton variant="outline" />
               <CallButton variant="outline" />
             </div>

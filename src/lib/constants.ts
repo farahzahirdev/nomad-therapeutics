@@ -39,6 +39,9 @@ export const FORM_ID = "b8WykJojCfh9YDGKQIa9";
 export const FORM_IFRAME_ID = "inline-b8WykJojCfh9YDGKQIa9";
 export const FORM_SECTION_ID = "qualify-form";
 export const BOOKING_SECTION_ID = "book";
+export const CALENDAR_ID = "0i8BscQ5Z3TFl57ySu6l";
+export const CALENDAR_SRC = `https://go.4tms.com/widget/booking/${CALENDAR_ID}`;
+export const CALENDAR_IFRAME_ID = `${CALENDAR_ID}_1790263686857`;
 
 export const HERO_TRUST_ITEMS = [
   { title: "5.0 on Google", icon: "star" as const },

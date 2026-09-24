@@ -7,6 +7,7 @@ import Testimonials from "@/components/Testimonials";
 import MeetTeam from "@/components/MeetTeam";
 import Providers from "@/components/Providers";
 import FAQ from "@/components/FAQ";
+import BookingCalendar from "@/components/BookingCalendar";
 import FinalCTA from "@/components/FinalCTA";
 import InquiryForm from "@/components/InquiryForm";
 import AtHomeCare from "@/components/AtHomeCare";
@@ -24,6 +25,7 @@ export default function Home() {
       <Testimonials />
       <MeetTeam />
       <Providers />
+      <BookingCalendar />
       <FAQ />
       <InquiryForm />
       <FinalCTA />

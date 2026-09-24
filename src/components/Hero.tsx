@@ -1,6 +1,6 @@
 import Image from "next/image";
 import TrustBar from "@/components/TrustBar";
-import { FORM_SECTION_ID, IMAGES } from "@/lib/constants";
+import { BOOKING_SECTION_ID, FORM_SECTION_ID, IMAGES } from "@/lib/constants";
 
 const FEATURES = [
   { title: "In-Home Nurse Care", icon: "home" as const },
@@ -61,7 +61,7 @@ export default function Hero() {
           </ul>
 
           <div className="nm-hero-actions">
-            <a href={`#${FORM_SECTION_ID}`} className="nm-hero-btn-primary">
+            <a href={`#${BOOKING_SECTION_ID}`} className="nm-hero-btn-primary">
               <CalendarIcon />
               Book Your Free Consultation
               <ArrowIcon />
