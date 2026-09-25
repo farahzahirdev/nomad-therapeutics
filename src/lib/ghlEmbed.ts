@@ -6,6 +6,8 @@ type IFrameResizeFn = (
   target?: HTMLIFrameElement,
 ) => void;
 
+type GhlWindow = Window & { iFrameResize?: IFrameResizeFn };
+
 export type GhlFormConfig = {
   id: string;
   name: string;
@@ -22,6 +24,14 @@ export type GhlCalendarConfig = {
   minHeight: string;
 };
 
+export function isGhlEmbedReady(): boolean {
+  return typeof (window as GhlWindow).iFrameResize === "function";
+}
+
+export function notifyGhlEmbedReady(): void {
+  window.dispatchEvent(new Event(GHL_EMBED_READY_EVENT));
+}
+
 function applyIframeStyles(
   iframe: HTMLIFrameElement,
   minHeight: string,
@@ -36,6 +46,7 @@ function applyIframeStyles(
     display: "block",
     opacity: "1",
     visibility: "visible",
+    pointerEvents: "auto",
   });
 }
 
@@ -74,9 +85,7 @@ export function createGhlCalendarIframe(config: GhlCalendarConfig): HTMLIFrameEl
 }
 
 function ensureVisibleFallback(iframe: HTMLIFrameElement): void {
-  // Prefer a compact starter height — full data-height left huge empty space under the form
   const fallback = iframe.style.minHeight || "720px";
-
   if (!iframe.style.height || iframe.clientHeight < 120) {
     iframe.style.height = fallback;
     iframe.style.minHeight = fallback;
@@ -88,22 +97,26 @@ function ensureVisibleFallback(iframe: HTMLIFrameElement): void {
 }
 
 /** Re-run GHL form_embed.js setup for a dynamically inserted iframe. */
-export function initGhlIframe(iframe: HTMLIFrameElement): void {
+export function initGhlIframe(iframe: HTMLIFrameElement, force = false): void {
   ensureVisibleFallback(iframe);
 
   const contentWindow = iframe.contentWindow;
   if (contentWindow) {
-    window.dispatchEvent(
-      new MessageEvent("message", {
-        data: ["iframeLoaded"],
-        source: contentWindow,
-      }),
-    );
+    try {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: ["iframeLoaded"],
+          source: contentWindow,
+        }),
+      );
+    } catch {
+      // ignore
+    }
   }
 
-  const iFrameResize = (window as Window & { iFrameResize?: IFrameResizeFn }).iFrameResize;
+  const iFrameResize = (window as GhlWindow).iFrameResize;
   if (typeof iFrameResize !== "function") return;
-  if (iframe.getAttribute(GHL_IFRAME_RESIZER_ATTR) === "true") return;
+  if (!force && iframe.getAttribute(GHL_IFRAME_RESIZER_ATTR) === "true") return;
 
   iframe.setAttribute(GHL_IFRAME_RESIZER_ATTR, "false");
   try {
@@ -113,7 +126,7 @@ export function initGhlIframe(iframe: HTMLIFrameElement): void {
         checkOrigin: false,
         enablePublicMethods: true,
         scrolling: true,
-        heightCalculationMethod: "offset",
+        heightCalculationMethod: "lowestElement",
         autoResize: true,
         sizeWidth: false,
         sizeHeight: true,
@@ -127,6 +140,7 @@ export function initGhlIframe(iframe: HTMLIFrameElement): void {
             el.style.visibility = "visible";
             el.style.pointerEvents = "auto";
             el.style.display = "block";
+            el.setAttribute(GHL_IFRAME_RESIZER_ATTR, "true");
 
             const host = el.parentElement;
             if (host) {
@@ -144,16 +158,12 @@ export function initGhlIframe(iframe: HTMLIFrameElement): void {
 }
 
 export function waitForGhlEmbed(iframe: HTMLIFrameElement, attempt = 0): void {
-  const hasScript =
-    typeof (window as Window & { iFrameResize?: IFrameResizeFn }).iFrameResize === "function";
-
-  if (hasScript) {
-    initGhlIframe(iframe);
+  if (isGhlEmbedReady()) {
+    initGhlIframe(iframe, attempt > 0);
     return;
   }
 
-  if (attempt >= 50) {
-    // Script still not ready — keep the iframe usable at its declared height
+  if (attempt >= 60) {
     ensureVisibleFallback(iframe);
     return;
   }
@@ -169,15 +179,12 @@ export function bindGhlIframe(iframe: HTMLIFrameElement): () => void {
   window.addEventListener(GHL_EMBED_READY_EVENT, run);
   run();
 
-  // Extra pass after a short delay for race with calendar + form on same page
-  const t1 = window.setTimeout(run, 400);
-  const t2 = window.setTimeout(run, 1200);
+  const timers = [300, 800, 1600, 2800].map((ms) => window.setTimeout(run, ms));
 
   return () => {
     iframe.removeEventListener("load", run);
     window.removeEventListener(GHL_EMBED_READY_EVENT, run);
-    window.clearTimeout(t1);
-    window.clearTimeout(t2);
+    timers.forEach((id) => window.clearTimeout(id));
   };
 }
 

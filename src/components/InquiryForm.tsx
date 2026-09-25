@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ADDRESS,
   FORM_HEIGHT,
@@ -14,9 +14,8 @@ import {
   PHONE_NUMBER,
   SERVICE_AREA,
 } from "@/lib/constants";
-import { bindGhlIframe } from "@/lib/ghlEmbed";
+import { mountAndBindGhlForm, unmountGhlEmbed } from "@/lib/ghlEmbed";
 
-/** Initial paint height — resizer grows/shrinks to fit form content. */
 const FORM_INITIAL_HEIGHT = "720px";
 
 function parseEmbedHeight(data: unknown): number | null {
@@ -39,36 +38,52 @@ function parseEmbedHeight(data: unknown): number | null {
 }
 
 export default function InquiryForm() {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [clientReady, setClientReady] = useState(false);
 
   useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    setClientReady(true);
+  }, []);
 
-    const unbind = bindGhlIframe(iframe);
+  useEffect(() => {
+    if (!clientReady) return;
+    const host = hostRef.current;
+    if (!host) return;
 
-    const applyHeight = (height: number) => {
-      const next = Math.max(height + 2, 200);
-      iframe.style.height = `${next}px`;
+    // Slight delay so calendar can claim form_embed first without starving the form
+    let unbind: (() => void) | undefined;
+    const mountTimer = window.setTimeout(() => {
+      unbind = mountAndBindGhlForm(host, {
+        id: FORM_ID,
+        name: FORM_NAME,
+        height: FORM_HEIGHT,
+        iframeId: FORM_IFRAME_ID,
+        minHeight: FORM_INITIAL_HEIGHT,
+        borderRadius: "20px",
+      });
+    }, 150);
+
+    const handleMessage = (event: MessageEvent) => {
+      if (!event.origin.includes("4tms.com")) return;
+      const height = parseEmbedHeight(event.data);
+      if (!height || height < 200) return;
+      const iframe = host.querySelector("iframe") as HTMLIFrameElement | null;
+      if (!iframe) return;
+      iframe.style.height = `${height + 2}px`;
       iframe.style.minHeight = "0";
       iframe.style.opacity = "1";
       iframe.style.visibility = "visible";
       iframe.style.display = "block";
     };
 
-    const handleMessage = (event: MessageEvent) => {
-      if (!event.origin.includes("4tms.com")) return;
-      const height = parseEmbedHeight(event.data);
-      if (!height || height < 200) return;
-      applyHeight(height);
-    };
-
     window.addEventListener("message", handleMessage);
     return () => {
-      unbind();
+      window.clearTimeout(mountTimer);
+      unbind?.();
+      unmountGhlEmbed(host);
       window.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [clientReady]);
 
   return (
     <section id={FORM_SECTION_ID} className="section-padding scroll-mt-28 bg-mist-2/50">
@@ -148,33 +163,11 @@ export default function InquiryForm() {
           </div>
 
           <div className="embed-panel embed-panel-form min-w-0">
-            <iframe
-              ref={iframeRef}
-              src={`https://go.4tms.com/widget/form/${FORM_ID}`}
-              style={{
-                width: "100%",
-                height: FORM_INITIAL_HEIGHT,
-                minHeight: FORM_INITIAL_HEIGHT,
-                border: "none",
-                display: "block",
-                background: "transparent",
-                borderRadius: "20px",
-              }}
-              id={FORM_IFRAME_ID}
-              data-layout="{'id':'INLINE'}"
-              data-trigger-type="alwaysShow"
-              data-trigger-value=""
-              data-activation-type="alwaysActivated"
-              data-activation-value=""
-              data-deactivation-type="neverDeactivate"
-              data-deactivation-value=""
-              data-form-name={FORM_NAME}
-              data-height={FORM_HEIGHT}
-              data-layout-iframe-id={FORM_IFRAME_ID}
-              data-form-id={FORM_ID}
-              data-cookie-consent="true"
-              data-cookie-consent-provider="auto"
-              title={FORM_NAME}
+            <div
+              ref={hostRef}
+              className="w-full"
+              style={{ minHeight: FORM_INITIAL_HEIGHT }}
+              aria-label="Qualification form"
             />
           </div>
         </div>

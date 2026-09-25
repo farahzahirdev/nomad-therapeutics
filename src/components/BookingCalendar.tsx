@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CallButton, QualifyButton } from "@/components/CTAButtons";
 import {
   BOOKING_SECTION_ID,
+  CALENDAR_ID,
   CALENDAR_IFRAME_ID,
-  CALENDAR_SRC,
   PHONE_HREF,
   PHONE_NUMBER,
 } from "@/lib/constants";
-import { bindGhlIframe } from "@/lib/ghlEmbed";
+import { mountAndBindGhlCalendar, unmountGhlEmbed } from "@/lib/ghlEmbed";
+
+const CALENDAR_MIN_HEIGHT = "720px";
 
 function parseEmbedHeight(data: unknown): number | null {
   if (typeof data === "number" && data > 0) return data;
@@ -31,28 +33,45 @@ function parseEmbedHeight(data: unknown): number | null {
 }
 
 export default function BookingCalendar() {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [clientReady, setClientReady] = useState(false);
+
   useEffect(() => {
-    const iframe = document.getElementById(CALENDAR_IFRAME_ID) as HTMLIFrameElement | null;
-    if (!iframe) return;
+    setClientReady(true);
+  }, []);
 
-    const unbind = bindGhlIframe(iframe);
+  useEffect(() => {
+    if (!clientReady) return;
+    const host = hostRef.current;
+    if (!host) return;
 
-    const resizeIframe = (height: number) => {
-      iframe.style.height = `${height}px`;
-    };
+    const unbind = mountAndBindGhlCalendar(host, {
+      id: CALENDAR_ID,
+      title: "Book a free consultation with Nomad Therapeutics",
+      iframeId: CALENDAR_IFRAME_ID,
+      minHeight: CALENDAR_MIN_HEIGHT,
+    });
 
     const handleMessage = (event: MessageEvent) => {
       if (!event.origin.includes("4tms.com")) return;
       const height = parseEmbedHeight(event.data);
-      if (height) resizeIframe(height);
+      if (!height || height < 200) return;
+      const iframe = host.querySelector("iframe") as HTMLIFrameElement | null;
+      if (!iframe) return;
+      iframe.style.height = `${height}px`;
+      iframe.style.minHeight = "0";
+      iframe.style.opacity = "1";
+      iframe.style.visibility = "visible";
+      iframe.style.display = "block";
     };
 
     window.addEventListener("message", handleMessage);
     return () => {
       unbind();
+      unmountGhlEmbed(host);
       window.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [clientReady]);
 
   return (
     <section id={BOOKING_SECTION_ID} className="section-padding scroll-mt-28">
@@ -84,21 +103,11 @@ export default function BookingCalendar() {
           </div>
 
           <div className="embed-panel min-w-0">
-            <iframe
-              src={CALENDAR_SRC}
-              allow="payment"
-              style={{
-                width: "100%",
-                height: "720px",
-                minHeight: "720px",
-                border: "none",
-                overflow: "hidden",
-                display: "block",
-                background: "transparent",
-              }}
-              scrolling="no"
-              id={CALENDAR_IFRAME_ID}
-              title="Book a free consultation with Nomad Therapeutics"
+            <div
+              ref={hostRef}
+              className="w-full overflow-hidden"
+              style={{ minHeight: CALENDAR_MIN_HEIGHT }}
+              aria-label="Booking calendar"
             />
           </div>
         </div>
