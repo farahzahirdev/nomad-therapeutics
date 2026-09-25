@@ -1753,6 +1753,15 @@ li {
   overflow: hidden;
 }
 
+.embed-panel-form {
+  padding: 0.35rem;
+  line-height: 0;
+}
+
+.embed-panel-form iframe {
+  vertical-align: top;
+}
+
 .contact-list {
   display: flex;
   flex-direction: column;

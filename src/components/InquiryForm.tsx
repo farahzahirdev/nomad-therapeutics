@@ -3,8 +3,10 @@
 import { useEffect, useRef } from "react";
 import {
   ADDRESS,
+  FORM_HEIGHT,
   FORM_ID,
   FORM_IFRAME_ID,
+  FORM_NAME,
   FORM_SECTION_ID,
   HOURS,
   MAPS_URL,
@@ -12,45 +14,59 @@ import {
   PHONE_NUMBER,
   SERVICE_AREA,
 } from "@/lib/constants";
-import {
-  createGhlFormIframe,
-  initGhlIframe,
-  unmountGhlEmbed,
-  waitForGhlEmbed,
-} from "@/lib/ghlEmbed";
+import { bindGhlIframe } from "@/lib/ghlEmbed";
 
-const FORM_MIN_HEIGHT = "900px";
+/** Initial paint height — resizer grows/shrinks to fit form content. */
+const FORM_INITIAL_HEIGHT = "720px";
+
+function parseEmbedHeight(data: unknown): number | null {
+  if (typeof data === "number" && data > 0) return data;
+
+  if (typeof data === "string") {
+    const match = data.match(/height[:=]\s*(\d+)/i);
+    if (match) return Number(match[1]);
+  }
+
+  if (typeof data === "object" && data !== null) {
+    const payload = data as Record<string, unknown>;
+    if (typeof payload.height === "number" && payload.height > 0) return payload.height;
+    if (typeof payload.frameHeight === "number" && payload.frameHeight > 0) {
+      return payload.frameHeight;
+    }
+  }
+
+  return null;
+}
 
 export default function InquiryForm() {
-  const hostRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
+    const iframe = iframeRef.current;
+    if (!iframe) return;
 
-    const iframe = createGhlFormIframe({
-      id: FORM_ID,
-      name: "TMS: New Web Inquiry + Params",
-      height: "2142",
-      iframeId: FORM_IFRAME_ID,
-      minHeight: FORM_MIN_HEIGHT,
-      borderRadius: "16px",
-    });
+    const unbind = bindGhlIframe(iframe);
 
-    // Keep cookie consent attrs from the original embed markup
-    iframe.setAttribute("data-cookie-consent", "true");
-    iframe.setAttribute("data-cookie-consent-provider", "auto");
+    const applyHeight = (height: number) => {
+      const next = Math.max(height + 2, 200);
+      iframe.style.height = `${next}px`;
+      iframe.style.minHeight = "0";
+      iframe.style.opacity = "1";
+      iframe.style.visibility = "visible";
+      iframe.style.display = "block";
+    };
 
-    host.replaceChildren(iframe);
+    const handleMessage = (event: MessageEvent) => {
+      if (!event.origin.includes("4tms.com")) return;
+      const height = parseEmbedHeight(event.data);
+      if (!height || height < 200) return;
+      applyHeight(height);
+    };
 
-    const handleLoad = () => waitForGhlEmbed(iframe);
-    iframe.addEventListener("load", handleLoad);
-    waitForGhlEmbed(iframe);
-    initGhlIframe(iframe);
-
+    window.addEventListener("message", handleMessage);
     return () => {
-      iframe.removeEventListener("load", handleLoad);
-      unmountGhlEmbed(host);
+      unbind();
+      window.removeEventListener("message", handleMessage);
     };
   }, []);
 
@@ -131,12 +147,34 @@ export default function InquiryForm() {
             <p className="text-center text-sm text-muted lg:text-left">{SERVICE_AREA}</p>
           </div>
 
-          <div className="embed-panel min-w-0">
-            <div
-              ref={hostRef}
-              className="w-full"
-              style={{ minHeight: FORM_MIN_HEIGHT }}
-              aria-label="Qualification form"
+          <div className="embed-panel embed-panel-form min-w-0">
+            <iframe
+              ref={iframeRef}
+              src={`https://go.4tms.com/widget/form/${FORM_ID}`}
+              style={{
+                width: "100%",
+                height: FORM_INITIAL_HEIGHT,
+                minHeight: FORM_INITIAL_HEIGHT,
+                border: "none",
+                display: "block",
+                background: "transparent",
+                borderRadius: "20px",
+              }}
+              id={FORM_IFRAME_ID}
+              data-layout="{'id':'INLINE'}"
+              data-trigger-type="alwaysShow"
+              data-trigger-value=""
+              data-activation-type="alwaysActivated"
+              data-activation-value=""
+              data-deactivation-type="neverDeactivate"
+              data-deactivation-value=""
+              data-form-name={FORM_NAME}
+              data-height={FORM_HEIGHT}
+              data-layout-iframe-id={FORM_IFRAME_ID}
+              data-form-id={FORM_ID}
+              data-cookie-consent="true"
+              data-cookie-consent-provider="auto"
+              title={FORM_NAME}
             />
           </div>
         </div>

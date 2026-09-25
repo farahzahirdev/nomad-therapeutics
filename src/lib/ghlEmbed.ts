@@ -1,4 +1,5 @@
 const GHL_IFRAME_RESIZER_ATTR = "data-iframe-resizer-initialized";
+export const GHL_EMBED_READY_EVENT = "ghl-embed-ready";
 
 type IFrameResizeFn = (
   options: Record<string, unknown>,
@@ -33,6 +34,8 @@ function applyIframeStyles(
     minHeight,
     height: minHeight,
     display: "block",
+    opacity: "1",
+    visibility: "visible",
   });
 }
 
@@ -52,6 +55,8 @@ export function createGhlFormIframe(config: GhlFormConfig): HTMLIFrameElement {
   iframe.setAttribute("data-height", config.height);
   iframe.setAttribute("data-layout-iframe-id", config.iframeId);
   iframe.setAttribute("data-form-id", config.id);
+  iframe.setAttribute("data-cookie-consent", "true");
+  iframe.setAttribute("data-cookie-consent-provider", "auto");
   applyIframeStyles(iframe, config.minHeight, config.borderRadius ?? "20px");
   return iframe;
 }
@@ -68,67 +73,112 @@ export function createGhlCalendarIframe(config: GhlCalendarConfig): HTMLIFrameEl
   return iframe;
 }
 
+function ensureVisibleFallback(iframe: HTMLIFrameElement): void {
+  // Prefer a compact starter height — full data-height left huge empty space under the form
+  const fallback = iframe.style.minHeight || "720px";
+
+  if (!iframe.style.height || iframe.clientHeight < 120) {
+    iframe.style.height = fallback;
+    iframe.style.minHeight = fallback;
+  }
+  iframe.style.opacity = "1";
+  iframe.style.visibility = "visible";
+  iframe.style.display = "block";
+  iframe.style.pointerEvents = "auto";
+}
+
 /** Re-run GHL form_embed.js setup for a dynamically inserted iframe. */
 export function initGhlIframe(iframe: HTMLIFrameElement): void {
-  const contentWindow = iframe.contentWindow;
-  if (!contentWindow) return;
+  ensureVisibleFallback(iframe);
 
-  window.dispatchEvent(
-    new MessageEvent("message", {
-      data: ["iframeLoaded"],
-      source: contentWindow,
-    }),
-  );
+  const contentWindow = iframe.contentWindow;
+  if (contentWindow) {
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: ["iframeLoaded"],
+        source: contentWindow,
+      }),
+    );
+  }
 
   const iFrameResize = (window as Window & { iFrameResize?: IFrameResizeFn }).iFrameResize;
   if (typeof iFrameResize !== "function") return;
   if (iframe.getAttribute(GHL_IFRAME_RESIZER_ATTR) === "true") return;
 
   iframe.setAttribute(GHL_IFRAME_RESIZER_ATTR, "false");
-  iFrameResize(
-    {
-      log: false,
-      checkOrigin: false,
-      enablePublicMethods: true,
-      scrolling: true,
-      heightCalculationMethod: "offset",
-      autoResize: true,
-      sizeWidth: false,
-      sizeHeight: true,
-      resizedCallback: (data: { iframe?: HTMLIFrameElement; height?: number }) => {
-        const el = data?.iframe;
-        const height = data?.height;
-        if (el && typeof height === "number" && height >= 0) {
-          const nextHeight = `${height + 5}px`;
-          el.style.height = nextHeight;
-          el.style.minHeight = "0";
-          el.style.opacity = "1";
-          el.style.visibility = "visible";
-          el.style.pointerEvents = "auto";
-          el.style.display = "block";
+  try {
+    iFrameResize(
+      {
+        log: false,
+        checkOrigin: false,
+        enablePublicMethods: true,
+        scrolling: true,
+        heightCalculationMethod: "offset",
+        autoResize: true,
+        sizeWidth: false,
+        sizeHeight: true,
+        resizedCallback: (data: { iframe?: HTMLIFrameElement; height?: number }) => {
+          const el = data?.iframe;
+          const height = data?.height;
+          if (el && typeof height === "number" && height >= 200) {
+            el.style.height = `${height + 2}px`;
+            el.style.minHeight = "0";
+            el.style.opacity = "1";
+            el.style.visibility = "visible";
+            el.style.pointerEvents = "auto";
+            el.style.display = "block";
 
-          const host = el.parentElement;
-          if (host) {
-            host.style.minHeight = "0";
-            host.style.height = "auto";
+            const host = el.parentElement;
+            if (host) {
+              host.style.minHeight = "0";
+              host.style.height = "auto";
+            }
           }
-        }
+        },
       },
-    },
-    iframe,
-  );
+      iframe,
+    );
+  } catch {
+    ensureVisibleFallback(iframe);
+  }
 }
 
 export function waitForGhlEmbed(iframe: HTMLIFrameElement, attempt = 0): void {
   const hasScript =
     typeof (window as Window & { iFrameResize?: IFrameResizeFn }).iFrameResize === "function";
 
-  if (hasScript || attempt >= 30) {
+  if (hasScript) {
     initGhlIframe(iframe);
     return;
   }
 
+  if (attempt >= 50) {
+    // Script still not ready — keep the iframe usable at its declared height
+    ensureVisibleFallback(iframe);
+    return;
+  }
+
   window.setTimeout(() => waitForGhlEmbed(iframe, attempt + 1), 100);
+}
+
+/** Bind load + script-ready listeners so embeds init on first paint, not only after refresh. */
+export function bindGhlIframe(iframe: HTMLIFrameElement): () => void {
+  const run = () => waitForGhlEmbed(iframe);
+
+  iframe.addEventListener("load", run);
+  window.addEventListener(GHL_EMBED_READY_EVENT, run);
+  run();
+
+  // Extra pass after a short delay for race with calendar + form on same page
+  const t1 = window.setTimeout(run, 400);
+  const t2 = window.setTimeout(run, 1200);
+
+  return () => {
+    iframe.removeEventListener("load", run);
+    window.removeEventListener(GHL_EMBED_READY_EVENT, run);
+    window.clearTimeout(t1);
+    window.clearTimeout(t2);
+  };
 }
 
 export function mountGhlForm(host: HTMLElement, config: GhlFormConfig): HTMLIFrameElement {
@@ -147,19 +197,6 @@ export function mountGhlCalendar(host: HTMLElement, config: GhlCalendarConfig): 
 
 export function unmountGhlEmbed(host: HTMLElement | null): void {
   host?.replaceChildren();
-}
-
-function bindGhlIframe(iframe: HTMLIFrameElement): () => void {
-  const handleLoad = () => {
-    waitForGhlEmbed(iframe);
-  };
-
-  iframe.addEventListener("load", handleLoad);
-  waitForGhlEmbed(iframe);
-
-  return () => {
-    iframe.removeEventListener("load", handleLoad);
-  };
 }
 
 export function mountAndBindGhlForm(host: HTMLElement, config: GhlFormConfig): () => void {

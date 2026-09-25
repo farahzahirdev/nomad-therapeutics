@@ -9,7 +9,7 @@ import {
   PHONE_HREF,
   PHONE_NUMBER,
 } from "@/lib/constants";
-import { waitForGhlEmbed } from "@/lib/ghlEmbed";
+import { bindGhlIframe } from "@/lib/ghlEmbed";
 
 function parseEmbedHeight(data: unknown): number | null {
   if (typeof data === "number" && data > 0) return data;
@@ -35,9 +35,7 @@ export default function BookingCalendar() {
     const iframe = document.getElementById(CALENDAR_IFRAME_ID) as HTMLIFrameElement | null;
     if (!iframe) return;
 
-    const handleLoad = () => waitForGhlEmbed(iframe);
-    iframe.addEventListener("load", handleLoad);
-    waitForGhlEmbed(iframe);
+    const unbind = bindGhlIframe(iframe);
 
     const resizeIframe = (height: number) => {
       iframe.style.height = `${height}px`;
@@ -51,7 +49,7 @@ export default function BookingCalendar() {
 
     window.addEventListener("message", handleMessage);
     return () => {
-      iframe.removeEventListener("load", handleLoad);
+      unbind();
       window.removeEventListener("message", handleMessage);
     };
   }, []);
